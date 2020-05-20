@@ -1,2 +1,4 @@
 # webpack4-demo
-总结
+
+
+npm i @babel/preset-env @babel/core babel-loader -D
