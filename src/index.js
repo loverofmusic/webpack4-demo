@@ -24,6 +24,9 @@ console.log('indexxxx');
 //   module.hot.decline('./list')
 // }
 
+// import "@babel/polyfill";
+// When setting `useBuiltIns: 'usage'`, polyfills are automatically imported when needed.
+//   Please remove the direct import of `core-js` or use `useBuiltIns: 'entry'` instead.
 const arr = [1, 3, 5];
 arr.map((i) => {
   return i + 1;

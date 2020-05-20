@@ -6,16 +6,12 @@ const webpack = require('webpack');
 module.exports = {
   mode: 'development', //默认为production 文件压缩
   // mode: 'production',
+
   // devtool: 'source-map',
-  devtool: 'cheap-module-eval-source-map',
-  // devtool: 'cheap-module-source-map',
-  // devtool: 'none',
-  //开发模式推荐：cheap-module-eval-source-map 会暴露源码
-  //生产模式推荐：cheap-module-source-map 既提示友好 也不会暴露源码
-  // entry: {
-  //     xxx: './src/index.js'
-  // },
-  // entry: './src/index.js',
+  // devtool: 'cheap-module-eval-source-map',//开发模式推荐：cheap-module-eval-source-map 会暴露源码
+  // devtool: 'cheap-module-source-map',//生产模式推荐：cheap-module-source-map 既提示友好 也不会暴露源码
+  devtool: 'none',//默认
+
   devServer: {
     contentBase: join(__dirname, 'dist'), //服务访问目录
     port: 9000,
@@ -24,10 +20,16 @@ module.exports = {
     // }
     hot: true, //hmr 必须开启此项
   },
+
+  // entry: {
+  //     xxx: './src/index.js'
+  // },
+  // entry: './src/index.js',
   entry: {
     index: './src/index.js',
     demo: './src/demo.js',
   },
+
   output: {
     // filename: 'bundle.js',
     filename: '[name].[hash:8].js',
@@ -35,6 +37,7 @@ module.exports = {
     // publicPath: 'http://cdn.xxx.com/assets/'
     publicPath: '/',
   },
+
   module: {
     rules: [
       {
@@ -85,10 +88,31 @@ module.exports = {
       {
         test: /\.m?js$/,
         loader: 'babel-loader',
-        options: {
-            //转化es5+语法
-            presets: ['@babel/preset-env']
-        },
+        // options: {
+          //转化es5+语法
+          //presets方式
+          // presets: ['@babel/preset-env']
+          // presets: [
+          //   [
+          //     '@babel/preset-env', 
+          //     {
+          //       // Array.prototype.flat()//最新的也要支持的话 使用core-js@3
+          //       //必须同时设置corejs：3 默认使用corejs：2
+          //       useBuiltIns: 'usage',//仅仅用到的打包 //entry //false 默认是false 全部打包
+          //       corejs: 3
+          //     }
+          //   ]
+          // ]
+          //
+          // plugins: [
+          //   [
+          //     "@babel/plugin-transform-runtime",
+          //     {
+          //       corejs: 3
+          //     }
+          //   ]
+          // ]
+        // },
         // use: {
         //   loader: 'babel-loader',
         //   options: {
