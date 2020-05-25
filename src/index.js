@@ -31,3 +31,8 @@ const arr = [1, 3, 5];
 arr.map((i) => {
   return i + 1;
 });
+
+import { fn1, fn2 } from './common/util.js';
+fn1();
+
+// import $ from 'jquery';//单独引入 如果不单独引入 就需要 注册到全局上，用webpack.ProvidePlugin

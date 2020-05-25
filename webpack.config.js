@@ -129,5 +129,5 @@ module.exports = {
     }),
     new CleanWebpackPlugin(),
     new webpack.HotModuleReplacementPlugin(),
-  ],
+  ]
 };
