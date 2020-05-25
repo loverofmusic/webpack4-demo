@@ -36,3 +36,9 @@ import { fn1, fn2 } from './common/util.js';
 fn1();
 
 // import $ from 'jquery';//单独引入 如果不单独引入 就需要 注册到全局上，用webpack.ProvidePlugin
+
+
+//动态加载方式 要加插件解析：npm i @babel/plugin-syntax-dynamic-import -D
+import(/*webpackChunkName:'jquery'*/'jquery').then(({default: $})=>{
+  console.log($.length);
+})

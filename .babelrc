@@ -1,7 +1,8 @@
 {
     "plugins": [
+        "@babel/plugin-syntax-dynamic-import",//动态加载
         [
-            "@babel/plugin-transform-runtime",
+            "@babel/plugin-transform-runtime",//polyfill以闭包方式注入 保证全局环境不被污染
             {
                 "corejs": 3
             }

@@ -1,4 +1,33 @@
 /******/ (function(modules) { // webpackBootstrap
+/******/ 	// install a JSONP callback for chunk loading
+/******/ 	function webpackJsonpCallback(data) {
+/******/ 		var chunkIds = data[0];
+/******/ 		var moreModules = data[1];
+/******/
+/******/
+/******/ 		// add "moreModules" to the modules object,
+/******/ 		// then flag all "chunkIds" as loaded and fire callback
+/******/ 		var moduleId, chunkId, i = 0, resolves = [];
+/******/ 		for(;i < chunkIds.length; i++) {
+/******/ 			chunkId = chunkIds[i];
+/******/ 			if(Object.prototype.hasOwnProperty.call(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 				resolves.push(installedChunks[chunkId][0]);
+/******/ 			}
+/******/ 			installedChunks[chunkId] = 0;
+/******/ 		}
+/******/ 		for(moduleId in moreModules) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
+/******/ 				modules[moduleId] = moreModules[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 		if(parentJsonpFunction) parentJsonpFunction(data);
+/******/
+/******/ 		while(resolves.length) {
+/******/ 			resolves.shift()();
+/******/ 		}
+/******/
+/******/ 	};
+/******/
 /******/ 	function hotDisposeChunk(chunkId) {
 /******/ 		delete installedChunks[chunkId];
 /******/ 	}
@@ -63,7 +92,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "af50abbdf6e3c1ee659c";
+/******/ 	var hotCurrentHash = "3d3cb86c65f4f8434848";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -282,7 +311,7 @@
 /******/ 				};
 /******/ 			});
 /******/ 			hotUpdate = {};
-/******/ 			var chunkId = "index";
+/******/ 			for(var chunkId in installedChunks)
 /******/ 			// eslint-disable-next-line no-lone-blocks
 /******/ 			{
 /******/ 				hotEnsureUpdateChunk(chunkId);
@@ -769,6 +798,20 @@
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
+/******/ 	// object to store loaded and loading chunks
+/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 	// Promise = chunk loading, 0 = chunk loaded
+/******/ 	var installedChunks = {
+/******/ 		"index": 0
+/******/ 	};
+/******/
+/******/
+/******/
+/******/ 	// script path function
+/******/ 	function jsonpScriptSrc(chunkId) {
+/******/ 		return __webpack_require__.p + "" + ({"vendors~jquery":"vendors~jquery"}[chunkId]||chunkId) + "." + hotCurrentHash.substr(0, 8) + ".js"
+/******/ 	}
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/
@@ -796,6 +839,67 @@
 /******/ 		return module.exports;
 /******/ 	}
 /******/
+/******/ 	// This file contains only the entry chunk.
+/******/ 	// The chunk loading function for additional chunks
+/******/ 	__webpack_require__.e = function requireEnsure(chunkId) {
+/******/ 		var promises = [];
+/******/
+/******/
+/******/ 		// JSONP chunk loading for javascript
+/******/
+/******/ 		var installedChunkData = installedChunks[chunkId];
+/******/ 		if(installedChunkData !== 0) { // 0 means "already installed".
+/******/
+/******/ 			// a Promise means "currently loading".
+/******/ 			if(installedChunkData) {
+/******/ 				promises.push(installedChunkData[2]);
+/******/ 			} else {
+/******/ 				// setup Promise in chunk cache
+/******/ 				var promise = new Promise(function(resolve, reject) {
+/******/ 					installedChunkData = installedChunks[chunkId] = [resolve, reject];
+/******/ 				});
+/******/ 				promises.push(installedChunkData[2] = promise);
+/******/
+/******/ 				// start chunk loading
+/******/ 				var script = document.createElement('script');
+/******/ 				var onScriptComplete;
+/******/
+/******/ 				script.charset = 'utf-8';
+/******/ 				script.timeout = 120;
+/******/ 				if (__webpack_require__.nc) {
+/******/ 					script.setAttribute("nonce", __webpack_require__.nc);
+/******/ 				}
+/******/ 				script.src = jsonpScriptSrc(chunkId);
+/******/
+/******/ 				// create error before stack unwound to get useful stacktrace later
+/******/ 				var error = new Error();
+/******/ 				onScriptComplete = function (event) {
+/******/ 					// avoid mem leaks in IE.
+/******/ 					script.onerror = script.onload = null;
+/******/ 					clearTimeout(timeout);
+/******/ 					var chunk = installedChunks[chunkId];
+/******/ 					if(chunk !== 0) {
+/******/ 						if(chunk) {
+/******/ 							var errorType = event && (event.type === 'load' ? 'missing' : event.type);
+/******/ 							var realSrc = event && event.target && event.target.src;
+/******/ 							error.message = 'Loading chunk ' + chunkId + ' failed.\n(' + errorType + ': ' + realSrc + ')';
+/******/ 							error.name = 'ChunkLoadError';
+/******/ 							error.type = errorType;
+/******/ 							error.request = realSrc;
+/******/ 							chunk[1](error);
+/******/ 						}
+/******/ 						installedChunks[chunkId] = undefined;
+/******/ 					}
+/******/ 				};
+/******/ 				var timeout = setTimeout(function(){
+/******/ 					onScriptComplete({ type: 'timeout', target: script });
+/******/ 				}, 120000);
+/******/ 				script.onerror = script.onload = onScriptComplete;
+/******/ 				document.head.appendChild(script);
+/******/ 			}
+/******/ 		}
+/******/ 		return Promise.all(promises);
+/******/ 	};
 /******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
@@ -849,8 +953,18 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "/";
 /******/
+/******/ 	// on error function for async loading
+/******/ 	__webpack_require__.oe = function(err) { console.error(err); throw err; };
+/******/
 /******/ 	// __webpack_hash__
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
+/******/
+/******/ 	var jsonpArray = window["webpackJsonp"] = window["webpackJsonp"] || [];
+/******/ 	var oldJsonpFunction = jsonpArray.push.bind(jsonpArray);
+/******/ 	jsonpArray.push = webpackJsonpCallback;
+/******/ 	jsonpArray = jsonpArray.slice();
+/******/ 	for(var i = 0; i < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);
+/******/ 	var parentJsonpFunction = oldJsonpFunction;
 /******/
 /******/
 /******/ 	// Load entry module and return exports
@@ -1421,7 +1535,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/map */ \"./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js\");\n/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _list__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./list */ \"./src/list.js\");\n/* harmony import */ var _common_util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./common/util.js */ \"./src/common/util.js\");\n\n\nObject(_list__WEBPACK_IMPORTED_MODULE_1__[\"list\"])(); // import img from './assets/images/t.jpg';\n// console.log(img)\n// import img2 from './assets/images/icon.png';\n// console.log(img2)\n// import ttf from './assets/font/1.ttf';\n// console.log(ttf)\n// import './assets/css/index.less';\n\nconsole.log('indexxxx'); //hmr\n// if(module.hot){\n//   module.hot.accept('./list', ()=>{\n//     console.log('update list');\n//     list();\n//   });\n//   //关闭hmr\n//   module.hot.decline('./list')\n// }\n// import \"@babel/polyfill\";\n// When setting `useBuiltIns: 'usage'`, polyfills are automatically imported when needed.\n//   Please remove the direct import of `core-js` or use `useBuiltIns: 'entry'` instead.\n\nconst arr = [1, 3, 5];\n\n_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0___default()(arr).call(arr, i => {\n  return i + 1;\n});\n\n\nObject(_common_util_js__WEBPACK_IMPORTED_MODULE_2__[\"fn1\"])(); // import $ from 'jquery';//单独引入 如果不单独引入 就需要 注册到全局上，用webpack.ProvidePlugin//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zcmMvaW5kZXguanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zcmMvaW5kZXguanM/YjYzNSJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBsaXN0IH0gZnJvbSAnLi9saXN0JztcclxubGlzdCgpO1xyXG5cclxuLy8gaW1wb3J0IGltZyBmcm9tICcuL2Fzc2V0cy9pbWFnZXMvdC5qcGcnO1xyXG4vLyBjb25zb2xlLmxvZyhpbWcpXHJcblxyXG4vLyBpbXBvcnQgaW1nMiBmcm9tICcuL2Fzc2V0cy9pbWFnZXMvaWNvbi5wbmcnO1xyXG4vLyBjb25zb2xlLmxvZyhpbWcyKVxyXG5cclxuLy8gaW1wb3J0IHR0ZiBmcm9tICcuL2Fzc2V0cy9mb250LzEudHRmJztcclxuLy8gY29uc29sZS5sb2codHRmKVxyXG5cclxuLy8gaW1wb3J0ICcuL2Fzc2V0cy9jc3MvaW5kZXgubGVzcyc7XHJcblxyXG5jb25zb2xlLmxvZygnaW5kZXh4eHgnKTtcclxuXHJcbi8vaG1yXHJcbi8vIGlmKG1vZHVsZS5ob3Qpe1xyXG4vLyAgIG1vZHVsZS5ob3QuYWNjZXB0KCcuL2xpc3QnLCAoKT0+e1xyXG4vLyAgICAgY29uc29sZS5sb2coJ3VwZGF0ZSBsaXN0Jyk7XHJcbi8vICAgICBsaXN0KCk7XHJcbi8vICAgfSk7XHJcbi8vICAgLy/lhbPpl61obXJcclxuLy8gICBtb2R1bGUuaG90LmRlY2xpbmUoJy4vbGlzdCcpXHJcbi8vIH1cclxuXHJcbi8vIGltcG9ydCBcIkBiYWJlbC9wb2x5ZmlsbFwiO1xyXG4vLyBXaGVuIHNldHRpbmcgYHVzZUJ1aWx0SW5zOiAndXNhZ2UnYCwgcG9seWZpbGxzIGFyZSBhdXRvbWF0aWNhbGx5IGltcG9ydGVkIHdoZW4gbmVlZGVkLlxyXG4vLyAgIFBsZWFzZSByZW1vdmUgdGhlIGRpcmVjdCBpbXBvcnQgb2YgYGNvcmUtanNgIG9yIHVzZSBgdXNlQnVpbHRJbnM6ICdlbnRyeSdgIGluc3RlYWQuXHJcbmNvbnN0IGFyciA9IFsxLCAzLCA1XTtcclxuYXJyLm1hcCgoaSkgPT4ge1xyXG4gIHJldHVybiBpICsgMTtcclxufSk7XHJcblxyXG5pbXBvcnQgeyBmbjEsIGZuMiB9IGZyb20gJy4vY29tbW9uL3V0aWwuanMnO1xyXG5mbjEoKTtcclxuXHJcbi8vIGltcG9ydCAkIGZyb20gJ2pxdWVyeSc7Ly/ljZXni6zlvJXlhaUg5aaC5p6c5LiN5Y2V54us5byV5YWlIOWwsemcgOimgSDms6jlhozliLDlhajlsYDkuIrvvIznlKh3ZWJwYWNrLlByb3ZpZGVQbHVnaW5cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7QUFBQTtBQUNBO0FBR0E7QUFFQTtBQUNBO0FBRUE7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./src/index.js\n");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/map */ \"./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js\");\n/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _list__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./list */ \"./src/list.js\");\n/* harmony import */ var _common_util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./common/util.js */ \"./src/common/util.js\");\n\n\nObject(_list__WEBPACK_IMPORTED_MODULE_1__[\"list\"])(); // import img from './assets/images/t.jpg';\n// console.log(img)\n// import img2 from './assets/images/icon.png';\n// console.log(img2)\n// import ttf from './assets/font/1.ttf';\n// console.log(ttf)\n// import './assets/css/index.less';\n\nconsole.log('indexxxx'); //hmr\n// if(module.hot){\n//   module.hot.accept('./list', ()=>{\n//     console.log('update list');\n//     list();\n//   });\n//   //关闭hmr\n//   module.hot.decline('./list')\n// }\n// import \"@babel/polyfill\";\n// When setting `useBuiltIns: 'usage'`, polyfills are automatically imported when needed.\n//   Please remove the direct import of `core-js` or use `useBuiltIns: 'entry'` instead.\n\nconst arr = [1, 3, 5];\n\n_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_0___default()(arr).call(arr, i => {\n  return i + 1;\n});\n\n\nObject(_common_util_js__WEBPACK_IMPORTED_MODULE_2__[\"fn1\"])(); // import $ from 'jquery';//单独引入 如果不单独引入 就需要 注册到全局上，用webpack.ProvidePlugin\n//动态加载方式 要加插件解析：npm i @babel/plugin-syntax-dynamic-import -D\n\n__webpack_require__.e(/*! import() | jquery */ \"vendors~jquery\").then(__webpack_require__.t.bind(null, /*! jquery */ \"./node_modules/jquery/dist/jquery.js\", 7)).then(({\n  default: $\n}) => {\n  console.log($.length);\n});//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zcmMvaW5kZXguanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zcmMvaW5kZXguanM/YjYzNSJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBsaXN0IH0gZnJvbSAnLi9saXN0JztcclxubGlzdCgpO1xyXG5cclxuLy8gaW1wb3J0IGltZyBmcm9tICcuL2Fzc2V0cy9pbWFnZXMvdC5qcGcnO1xyXG4vLyBjb25zb2xlLmxvZyhpbWcpXHJcblxyXG4vLyBpbXBvcnQgaW1nMiBmcm9tICcuL2Fzc2V0cy9pbWFnZXMvaWNvbi5wbmcnO1xyXG4vLyBjb25zb2xlLmxvZyhpbWcyKVxyXG5cclxuLy8gaW1wb3J0IHR0ZiBmcm9tICcuL2Fzc2V0cy9mb250LzEudHRmJztcclxuLy8gY29uc29sZS5sb2codHRmKVxyXG5cclxuLy8gaW1wb3J0ICcuL2Fzc2V0cy9jc3MvaW5kZXgubGVzcyc7XHJcblxyXG5jb25zb2xlLmxvZygnaW5kZXh4eHgnKTtcclxuXHJcbi8vaG1yXHJcbi8vIGlmKG1vZHVsZS5ob3Qpe1xyXG4vLyAgIG1vZHVsZS5ob3QuYWNjZXB0KCcuL2xpc3QnLCAoKT0+e1xyXG4vLyAgICAgY29uc29sZS5sb2coJ3VwZGF0ZSBsaXN0Jyk7XHJcbi8vICAgICBsaXN0KCk7XHJcbi8vICAgfSk7XHJcbi8vICAgLy/lhbPpl61obXJcclxuLy8gICBtb2R1bGUuaG90LmRlY2xpbmUoJy4vbGlzdCcpXHJcbi8vIH1cclxuXHJcbi8vIGltcG9ydCBcIkBiYWJlbC9wb2x5ZmlsbFwiO1xyXG4vLyBXaGVuIHNldHRpbmcgYHVzZUJ1aWx0SW5zOiAndXNhZ2UnYCwgcG9seWZpbGxzIGFyZSBhdXRvbWF0aWNhbGx5IGltcG9ydGVkIHdoZW4gbmVlZGVkLlxyXG4vLyAgIFBsZWFzZSByZW1vdmUgdGhlIGRpcmVjdCBpbXBvcnQgb2YgYGNvcmUtanNgIG9yIHVzZSBgdXNlQnVpbHRJbnM6ICdlbnRyeSdgIGluc3RlYWQuXHJcbmNvbnN0IGFyciA9IFsxLCAzLCA1XTtcclxuYXJyLm1hcCgoaSkgPT4ge1xyXG4gIHJldHVybiBpICsgMTtcclxufSk7XHJcblxyXG5pbXBvcnQgeyBmbjEsIGZuMiB9IGZyb20gJy4vY29tbW9uL3V0aWwuanMnO1xyXG5mbjEoKTtcclxuXHJcbi8vIGltcG9ydCAkIGZyb20gJ2pxdWVyeSc7Ly/ljZXni6zlvJXlhaUg5aaC5p6c5LiN5Y2V54us5byV5YWlIOWwsemcgOimgSDms6jlhozliLDlhajlsYDkuIrvvIznlKh3ZWJwYWNrLlByb3ZpZGVQbHVnaW5cclxuXHJcblxyXG4vL+WKqOaAgeWKoOi9veaWueW8jyDopoHliqDmj5Lku7bop6PmnpDvvJpucG0gaSBAYmFiZWwvcGx1Z2luLXN5bnRheC1keW5hbWljLWltcG9ydCAtRFxyXG5pbXBvcnQoLyp3ZWJwYWNrQ2h1bmtOYW1lOidqcXVlcnknKi8nanF1ZXJ5JykudGhlbigoe2RlZmF1bHQ6ICR9KT0+e1xyXG4gIGNvbnNvbGUubG9nKCQubGVuZ3RoKTtcclxufSkiXSwibWFwcGluZ3MiOiI7Ozs7OztBQUFBO0FBQ0E7QUFHQTtBQUVBO0FBQ0E7QUFFQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUtBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./src/index.js\n");
 
 /***/ }),
 

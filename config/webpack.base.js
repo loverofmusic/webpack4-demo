@@ -8,7 +8,7 @@ module.exports = {
     entry: {
         index: resolve(__dirname, '../src/index.js'),
         demo: resolve(__dirname, '../src/demo.js'),
-        jquery: 'jquery'
+        // jquery: 'jquery'//多入口方式
     },
 
     output: {
