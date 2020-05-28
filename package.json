@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:dev": "npx webpack  --config ./config/webpack.dev.js",
-    "build:prod": "npx webpack  --config ./config/webpack.prod.js",
+    "build:prod": "npx webpack  --config ./config/webpack.prod.js --env production --myenv me",
     "dev:server": "npx webpack-dev-server --config ./config/webpack.dev.js"
   },
   "keywords": [],
@@ -28,13 +28,17 @@
     "html-webpack-plugin": "^4.3.0",
     "less": "^3.11.1",
     "less-loader": "^6.1.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
     "postcss-loader": "^3.0.0",
     "style-loader": "^1.2.1",
     "url-loader": "^4.1.0",
     "webpack": "^4.43.0",
+    "webpack-bundle-analyzer": "^3.8.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "yargs": "^15.3.1"
   },
   "dependencies": {
     "jquery": "^3.5.1"

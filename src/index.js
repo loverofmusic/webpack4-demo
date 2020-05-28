@@ -39,6 +39,10 @@ fn1();
 
 
 //动态加载方式 要加插件解析：npm i @babel/plugin-syntax-dynamic-import -D
-import(/*webpackChunkName:'jquery'*/'jquery').then(({default: $})=>{
-  console.log($.length);
-})
+// import(/*webpackChunkName:'jquery'*/'jquery').then(({default: $})=>{
+//   console.log($.length);
+// })
+
+import jquery from 'jquery';
+
+import './assets/css/index.less';
